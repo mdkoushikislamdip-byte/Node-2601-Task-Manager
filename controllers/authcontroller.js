@@ -7,6 +7,8 @@ const {
     generateAccessToken
 } = require("../helpers/utils");
 const authSchema = require("../models/authSchema");
+// const cloudinary = require('cloudinary').v2
+const cloudinary = require("../configs/cloudinary");
 
 const registration = async (req, res) => {
     const {
@@ -15,7 +17,7 @@ const registration = async (req, res) => {
         password
     } = req.body;
     try {
-        if (!fullName?.trim()) return res.status(400).send({
+        if (!fullName ?.trim()) return res.status(400).send({
             message: "FullName is required."
         });
         if (!email) return res.status(400).send({
@@ -161,9 +163,31 @@ const userProfile = async (req, res) => {
         })
     }
 }
+
+const updateProfile = async (req, res) => {
+    const {
+        fullName
+    } = req.body;
+    const userId = req.user._id;
+
+    try {
+        console.log(req.file);
+        cloudinary.uploader.upload(req.file.path, (error, result) => {
+            upload_preset: "taskmanager/avatars"
+        }, (error, result) => {
+            console.log(result, error);
+        });
+
+        res.send("update profile route")
+    } catch (error) {
+
+    }
+}
+
 module.exports = {
     registration,
     verifyOTP,
     login,
-    userProfile
-}
+    userProfile,
+    updateProfile
+};
