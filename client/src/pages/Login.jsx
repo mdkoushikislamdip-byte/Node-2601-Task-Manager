@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import { useLoginMutation } from "../services/api";
 
 
 
-const Login = () => {
+const Login = ( {onSubmit} ) => {
+  const navigate = useNavigate()
       const [ loginUser ] = useLoginMutation()
   const [formData, setFormData] = useState({
     email: "",
@@ -16,10 +17,10 @@ const Login = () => {
   const [errors, setErrors] = useState({});
 
   // Handle input change
-  const handleChange = (e) => {
+  const handleChange = (field) => (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [field]: e.target.value,
     });
   };
 
@@ -32,37 +33,64 @@ const Login = () => {
     }
 
     if (formData.password.length < 5) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = "Password must be at least 5 characters";
     }
 
     return newErrors;
   };
 
   // Handle submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const validationErrors = validate();
+  const validationErrors = {};
+
+  if (!formData.email) {
+    validationErrors.email = "Email is required";
+  }
+
+  if (!formData.password) {
+    validationErrors.password = "Password is required";
+  }
+
+  if (Object.keys(validationErrors).length > 0) {
     setErrors(validationErrors);
+    return;
+  }
 
-    if (Object.keys(validationErrors).length === 0) {
-      console.log("Form Data:", formData);
+  setErrors({});
 
-      // Reset form
-    //   setFormData({
-    //     email: "",
-    //     password: "",
-    //   });
-    }
+  try {
     const res = await loginUser(formData);
-     if (res.error) {
-      const field = res.error.data.field;
-      if (field == "email") return setErrors({ email: res.error.data.message });
-      if (field == "password") return setErrors({ password: res.error.data.message });
-    }
-      console.log("Login successfully")
-  };
 
+    if (res.error) {
+      const field = res?.error?.data?.field;
+      const message = res?.error?.data?.message;
+
+      if (field === "email") {
+        return setErrors({ email: message });
+      }
+
+      if (field === "password") {
+        return setErrors({ password: message });
+      }
+
+      return setErrors({
+        general: message || "Login failed",
+      });
+    }
+
+    setTimeout(() => {
+      navigate("/");
+    }, 500);
+
+  } catch (error) {
+    console.log(error);
+    setErrors({
+      general: "Something went wrong",
+    });
+  }
+};
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form
@@ -77,7 +105,7 @@ const Login = () => {
           type="email"
           name="email"
           value={formData.email}
-          onChange={handleChange}
+          onChange={handleChange ("email")}
           placeholder="Enter your email"
           error={errors.email}
         />
@@ -87,7 +115,7 @@ const Login = () => {
           type="password"
           name="password"
           value={formData.password}
-          onChange={handleChange}
+          onChange={handleChange ("password")}
           placeholder="Enter your password"
           error={errors.password}
         />
