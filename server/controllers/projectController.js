@@ -47,8 +47,9 @@ const projectList = async (req, res) => {
       title: {
         $regex: search || "",
         $options: "i"
-      }
-    }).populate("author", "fullName avatar");
+      }})
+      .populate("author members", "fullName avatar")
+    .select("title description tasks._id slug");
 
     if (!projects) return res.status(400).send({
       message: "Project not found"
@@ -63,6 +64,23 @@ const projectList = async (req, res) => {
     res.status(500).send({
       message: "Internal Server Error!"
     })
+  }
+}
+
+const projectDetails = async (req, res) =>{
+  const { slug } = req.params;
+  console.log(slug)
+  try {
+    const project = await projectSchema.findOne({ $or: [{
+          author: req.user._id,},{members: req.user._id,}
+      ], slug }).populate("author members", "fullName avatar")
+    if(!project){
+      return res.status(404).send({message: "not found"})
+    }
+    res.status(200).send(project)
+  } catch (error) {
+    console.log(error)
+    
   }
 }
 
@@ -183,5 +201,6 @@ module.exports = {
   createProject,
   projectList,
   addTeamMemberToProject,
-  addTaskToProject
+  addTaskToProject,
+  projectDetails
 };

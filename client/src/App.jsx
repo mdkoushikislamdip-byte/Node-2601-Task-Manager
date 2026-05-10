@@ -4,6 +4,7 @@ import Registration from './pages/Registration';
 import Login from './pages/Login';
 import OTPVerification from './pages/OTPVerification';
 import Dashboard from './pages/Dashboard';
+import Project from './pages/Project';
 
 
 const App = () => {
@@ -14,6 +15,7 @@ const App = () => {
         <Route path='/login' element={<Login />} />
         <Route path='/otpverification' element={<OTPVerification />} />
          <Route path="/" element={<Dashboard />} />
+         <Route path="/:slug" element={<Project />} />
       </Routes>
    </BrowserRouter>
   )

@@ -4,3 +4,11 @@
     margin: auto;
     padding: 0 16px;
 }
+
+/* Button-er class-e eti add koro */
+.create-project-btn {
+  position: fixed; /* Tumi hoyto fixed use korcho */
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999; /* Eti shob kichur upore rakhbe */
+}
